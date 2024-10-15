@@ -1,6 +1,15 @@
+import jwt, os
+from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
-from models import User, TempUser
-from schemas import UserCreate, TempUserCreate
+from sqlalchemy import func
+from models import User, TempUser, DogBreeds
+from schemas import UserCreate, TempUserCreate, DogBreed
+from dotenv import load_dotenv
+load_dotenv()
+
+JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
+JWT_ALGORITHM = "HS256"
+JWT_EXPIRATION_TIME_MINUTES = 30
 
 def get_user_by_social_id(db: Session, social_id: str):
     return db.query(User).filter(User.social_id == social_id).first()
@@ -36,3 +45,24 @@ def delete_temp_user(db: Session, temp_user_id: int):
         db.commit()
         return True
     return False
+
+# JWT 토큰 생성 함수
+def create_jwt_token(data: dict):
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(minutes=JWT_EXPIRATION_TIME_MINUTES)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
+    return encoded_jwt
+
+def get_dogbreed_list(db : Session, query : str):
+    dogbreeds = db.query(DogBreeds).filter(
+        func.lower(DogBreeds.name).contains(func.lower(query))
+    ).all()
+    return dogbreeds
+
+def create_dogbreed(db : Session, name : str):
+    dog_breed = DogBreeds(name=name)
+    db.add(dog_breed)
+    db.commit()
+    db.refresh(dog_breed)
+    return dog_breed

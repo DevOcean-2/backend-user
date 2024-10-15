@@ -17,3 +17,10 @@ class TempUser(Base):
     # email = Column(String, index=True)
     name = Column(String)
     social_id = Column(String, index=True)
+
+class DogBreeds(Base):
+    __tablename__ = "dog_breeds"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, index=True)
+    # description = Column(String)

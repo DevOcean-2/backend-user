@@ -17,10 +17,10 @@ app = FastAPI(
     description="backend for balbalm user service",
     version="1.0-beta",
     openapi_url="/openapi.json",
+    debug=True
 )
 
 app.logger = logger
-
 
 @app.middleware("http")
 async def http_log(request, call_next):
@@ -67,7 +67,15 @@ async def get_user_apis():
     return {
         "message": "Welcome to the Balbalm User API!",
         "endpoints": {
-
+            "GET /user/login" : "Kakao Social Login",
+            "GET /user/login/auth" : "Kakao Login Authorization",
+            "POST /user/onboarding/signup" : "Sign Up for New User",
+            "GET /user/onboarding/dogbreed" : "Search DogBreed with Query",
+            "POST /user/onboarding/dogbreed/add" : "Add New DogBreed",
+            "PUT /user/profile": "Update your profile",
+            "PUT /user/profile/tags": "Update your profile tags",
+            "GET /user/profile/{user_id}": "Get user profile by user ID",
+            "GET /user/profile/visitors": "Get your profile visitors",
         }
     }
 

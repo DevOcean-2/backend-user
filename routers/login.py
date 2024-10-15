@@ -4,23 +4,18 @@
 from fastapi import HTTPException, Depends, APIRouter, Request
 from fastapi.security import OAuth2AuthorizationCodeBearer
 from starlette.responses import RedirectResponse, JSONResponse
-import httpx, os, jwt
-from datetime import datetime, timedelta
+import httpx, os
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
 load_dotenv()
-from schemas import KaKaoUserInfo, UserCreate, TempUserCreate
+from schemas import KaKaoUserInfo, TempUserCreate
 from database import get_db
-from crud import create_user, create_temp_user, get_user_by_social_id, get_temp_user, delete_temp_user
-
+from crud import create_temp_user, get_user_by_social_id, create_jwt_token
 
 # 카카오 개발자 계정에서 얻은 정보로 설정
 KAKAO_CLIENT_ID = os.environ.get("KAKAO_CLIENT_ID")
 KAKAO_CLIENT_SECRET = os.environ.get("KAKAO_CLIENT_SECRET")
 KAKAO_REDIRECT_URI = os.environ.get("KAKAO_REDIRECT_URI", "http://localhost:8000/user/login/auth")
-JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
-JWT_ALGORITHM = "HS256"
-JWT_EXPIRATION_TIME_MINUTES = 30
 
 oauth2_scheme = OAuth2AuthorizationCodeBearer(
     authorizationUrl="https://kauth.kakao.com/oauth/authorize",
@@ -29,7 +24,7 @@ oauth2_scheme = OAuth2AuthorizationCodeBearer(
 
 router = APIRouter(
     prefix="/login",
-    tags=["Login"],
+    tags=["User"],
     responses={404: {"description": "Not found"}},
 )
 
@@ -61,7 +56,7 @@ async def kakao_callback(code: str, request: Request, db: Session = Depends(get_
     access_token = token_data["access_token"]
 
     # 카카오 액세스 토큰으로 사용자 정보 가져오기
-    user_info = await get_user(access_token)
+    user_info = await get_kakao_userinfo(access_token)
     
     # DB에서 사용자 확인
     db_user = get_user_by_social_id(db, social_id=user_info.id)
@@ -76,13 +71,14 @@ async def kakao_callback(code: str, request: Request, db: Session = Depends(get_
         return JSONResponse(content={
             "message": "Additional information required",
             "temp_user_id": temp_user_id,
+            "social_id" : temp_user.social_id,
+            "name" : temp_user.name,
             "redirect_to": "/signup"
         })
     else:
         # 기존 사용자: 로그인 처리
         jwt_token = create_jwt_token({
             "sub": str(db_user.id),
-            "email": db_user.email
         })
         return JSONResponse(content={
             "message": "User logged in successfully",
@@ -90,41 +86,8 @@ async def kakao_callback(code: str, request: Request, db: Session = Depends(get_
             "token_type": "bearer"
         })
 
-# 새로 로그인 한 유저에 대해 회원가입 프로세스 진행
-@router.post("/signup")
-async def complete_signup(user_data: UserCreate, db: Session = Depends(get_db)):
-    # 임시 사용자 정보 확인
-    temp_user = get_temp_user(db, user_data.temp_user_id)
-    if not temp_user:
-        raise HTTPException(status_code=400, detail="Invalid temp_user_id")
-    
-    # 새 사용자 생성
-    new_user = UserCreate(
-        # TempUser에서 가져온 필드값들
-        social_id=temp_user.social_id,
-        name=temp_user.name,
-
-        # 새로 입력 받은 필드 값들
-        # 추후 추가 예정
-    )
-    db_user = create_user(db, new_user)
-    
-    # 임시 사용자 정보 삭제
-    delete_temp_user(db, temp_user.id)
-    
-    # JWT 토큰 생성
-    jwt_token = create_jwt_token({
-        "sub": str(db_user.id),
-    })
-    
-    return JSONResponse(content={
-        "message": "User registered successfully",
-        "access_token": jwt_token,
-        "token_type": "bearer"
-    })
-
 # access token을 사용하여 사용자 정보를 가져옴 
-async def get_user(token: str = Depends(oauth2_scheme)):
+async def get_kakao_userinfo(token: str = Depends(oauth2_scheme)):
     user_url = "https://kapi.kakao.com/v2/user/me"
     headers = {"Authorization": f"Bearer {token}"}
 
@@ -146,11 +109,3 @@ async def get_user(token: str = Depends(oauth2_scheme)):
         nickname=profile.get('nickname'),
         profile_image=profile.get('profile_image_url')
     )
-
-# JWT 토큰 생성 함수
-def create_jwt_token(data: dict):
-    to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(minutes=JWT_EXPIRATION_TIME_MINUTES)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
-    return encoded_jwt
