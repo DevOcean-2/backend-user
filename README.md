@@ -1,4 +1,25 @@
-# Backend Feed Service
+# Backend User Service
+
+## Directory Tree
+```javascript
+backend-user/
+├── routers/
+│   ├── login.py         # 카카오 소셜 로그인
+│   ├── onboarding.py    # 초기 회원 회원 가입
+│   └── profile.py       # 프로필 관리
+│
+├── crud.py              # CRUD 함수
+├── database.py          # DB 설정 & 세션 관리
+├── models.py            # SQLAlchemy ORM 기반 DB 스키마 정의
+├── schemas.py           # Pydantic 기반 모델 정의
+├── main.py              # FastAPI App
+├── requirements.txt 
+├── .env                 
+├── .gitignore           
+└── .venv/               # 가상 환경
+```
+
+## 
 
 ## 개발 환경 세팅
 1. virtural env 설정
@@ -11,6 +32,31 @@
    ```shell
    pip3 install -r requirements.txt
    ```
+3. PostgreSQL Container Setting
+```shell
+$ docker run --name postgres -e POSTGRES_PASSWORD=1234 -p 5432:5432 -d postgres
+$ docker exec -it postgres /bin/bash
+> psql -U postgres -w
+> CREATE DATABASE devocean;
+```
+4. DB Migration using Alembic
+```shell
+# 1. alembic 초기화(alembic 디렉토리 생성)
+$ alembic init alembic
+
+# 2. alembic.ini 파일의 sqlalchemy.url을 변경
+    sqlalchemy.url = postgresql://postgres:1234@localhost/devocean
+
+# 3. alembic/env.py 수정
+    import models
+    target_metadata = models.Base.metadata
+
+# 4. migration 생성
+$ alembic revision --autogenerate -m "Create users and temp_users tables"
+
+# 5. migration 적용
+$ alembic upgrade head
+```
 
 ## 개발
 1. 브랜치
