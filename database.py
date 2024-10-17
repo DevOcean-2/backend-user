@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from fastapi import HTTPException
 
 # 데이터베이스 URL 설정
-SQLALCHEMY_DATABASE_URL = "postgresql://postgres:1234@localhost/devocean"
+SQLALCHEMY_DATABASE_URL = "postgresql://postgres:balbalm07@127.0.0.1:5432/balbalm"
 
 # 엔진 생성
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
