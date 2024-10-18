@@ -5,10 +5,12 @@ from fastapi import HTTPException, Depends, APIRouter, Query
 from starlette.responses import JSONResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from schemas import UserCreate, DogBreed
+from schemas import UserCreate, DogBreed, Vaccination, Allergy
 from database import get_db
-from crud import create_user, get_temp_user, delete_temp_user, create_jwt_token, get_dogbreed_list, create_dogbreed
-
+from crud import (
+    create_user, get_temp_user, delete_temp_user, create_jwt_token,
+    get_dogbreed_list, get_vaccination_list, get_allergy_list
+)
 
 router = APIRouter(
     prefix="/onboarding",
@@ -50,12 +52,17 @@ async def complete_signup(user_data: UserCreate, db: Session = Depends(get_db)):
         "token_type": "bearer"
     })
 
-@router.post("/dogbreed/add", response_model=DogBreed)
-async def add_dogbreed(name: str, db: Session=Depends(get_db)):
-    dog_breed = create_dogbreed(db, name)
-    return DogBreed(id=dog_breed.id, name=dog_breed.name)
-
 @router.get("/dogbreed", response_model=List[DogBreed])
-async def search_dogbreed(query: str = Query(..., min_length=1), db: Session=Depends(get_db)):
-    breeds = get_dogbreed_list(db, query) # query를 포함하는 품종 리스트 반환
+async def search_dogbreed(db: Session=Depends(get_db)):
+    breeds = get_dogbreed_list(db) # 품종 리스트 전체 반환
+    return breeds
+
+@router.get("/vaccination", response_model=List[Vaccination])
+async def search_vaccination(db: Session=Depends(get_db)):
+    breeds = get_vaccination_list(db) # 백신 리스트 전체 반환
+    return breeds
+
+@router.get("/allergy", response_model=List[Allergy])
+async def search_allergy(db: Session=Depends(get_db)):
+    breeds = get_allergy_list(db) # 알러지 리스트 전체 반환
     return breeds

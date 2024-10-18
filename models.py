@@ -24,3 +24,17 @@ class DogBreeds(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True)
     # description = Column(String)
+
+class Vaccinations(Base):
+    __tablename__ = "vaccinations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, index=True)
+    # description = Column(String)
+
+class Allergies(Base):
+    __tablename__ = "allergies"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, index=True)
+    # description = Column(String)

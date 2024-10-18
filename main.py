@@ -7,7 +7,7 @@ from fastapi import FastAPI, APIRouter
 from starlette_context import context
 from starlette_context.middleware import ContextMiddleware
 from starlette.responses import Response
-from routers import login, onboarding
+from routers import login, onboarding, profile, admin
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +57,10 @@ user_router = APIRouter(
     prefix="/user",
     tags=["User"]
 )
+admin_router = APIRouter(
+    prefix='/admin',
+    tags=["Admin"]
+)
 
 @user_router.get("", response_model=dict)
 async def get_user_apis():
@@ -81,6 +85,9 @@ async def get_user_apis():
 
 user_router.include_router(login.router)
 user_router.include_router(onboarding.router)
+user_router.include_router(profile.router)
+admin_router.include_router(admin.router)
 
 # app 에 추가
 app.include_router(user_router)
+app.include_router(admin_router)
