@@ -5,12 +5,11 @@ from fastapi import HTTPException, Depends, APIRouter, Query
 from starlette.responses import JSONResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from schemas import UserCreate, DogBreed, Vaccination, Allergy
-from database import get_db
-from crud import (
-    create_user, get_temp_user, delete_temp_user, create_jwt_token,
-    get_dogbreed_list, get_vaccination_list, get_allergy_list
-)
+from ..database.db import get_db
+from ..schemas.login import UserCreate
+from ..schemas.onboarding import DogBreed, Vaccination, Allergy
+from ..services.login import create_user, get_temp_user, delete_temp_user, create_jwt_token
+from ..services.onboarding import get_dogbreed_list, get_vaccination_list, get_allergy_list
 
 router = APIRouter(
     prefix="/onboarding",

@@ -7,7 +7,7 @@ from fastapi import FastAPI, APIRouter
 from starlette_context import context
 from starlette_context.middleware import ContextMiddleware
 from starlette.responses import Response
-from routers import login, onboarding, profile, admin
+from app.routers import login, onboarding, profile, admin
 
 logger = logging.getLogger(__name__)
 

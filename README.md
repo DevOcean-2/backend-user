@@ -3,23 +3,24 @@
 ## Directory Tree
 ```javascript
 backend-user/
-├── routers/
-│   ├── login.py         # 카카오 소셜 로그인
-│   ├── onboarding.py    # 초기 회원 회원 가입
-│   └── profile.py       # 프로필 관리
-│
-├── crud.py              # CRUD 함수
-├── database.py          # DB 설정 & 세션 관리
-├── models.py            # SQLAlchemy ORM 기반 DB 스키마 정의
-├── schemas.py           # Pydantic 기반 모델 정의
-├── main.py              # FastAPI App
+├── app/
+│   ├── routers/
+│   │   ├── login.py          # 카카오 소셜 로그인
+│   │   ├── onboarding.py     # 초기 회원 회원 가입
+│   │   ├── profile.py        # 프로필 관리
+│   │   └── admin.py          # 관리자 페이지용
+│   ├── database/             # SSH Tunneling & DB 설정
+│   ├── models/               # SQLAlchemy ORM 기반 DB 스키마 정의
+│   ├── schemas/              # Pydantic 기반 모델 정의
+│   └── services/             # CRUD
+├── alembic/                  # DB 마이그레이션, 버전 관리
+├── alembic.ini               # FastAPI App
+├── main.py                   # FastAPI App
 ├── requirements.txt 
 ├── .env                 
 ├── .gitignore           
 └── .venv/               # 가상 환경
 ```
-
-## 
 
 ## 개발 환경 세팅
 1. virtural env 설정
@@ -32,29 +33,20 @@ backend-user/
    ```shell
    pip3 install -r requirements.txt
    ```
-3. ~~PostgreSQL Container Setting~~  3번 내용은 개발을 위한 데이터베이스 접근으로 변경되었습니다.
-```shell
-$ docker run --name postgres -e POSTGRES_PASSWORD=1234 -p 5432:5432 -d postgres
-$ docker exec -it postgres /bin/bash
-> psql -U postgres -w
-> CREATE DATABASE devocean;
+
+3. 개발을 위한 DB 접근(database의 tunneling으로 생략해도 됨)
+``` bash
+# ID: postgres
+# Password: balbalm07
+$ ssh -i balbalm-aws.pem -L 5432:balbalm-db.ch6k662g0l8s.ap-northeast-2.rds.amazonaws.com:5432 ubuntu@ec2-52-78-173-191.ap-northeast-2.compute.amazonaws.com
+$ psql -h balbalm-db.ch6k662g0l8s.ap-northeast-2.rds.amazonaws.com -U postgres
 ```
-4. DB Migration using Alembic
+3. DB Migration using Alembic
 ```shell
-# 1. alembic 초기화(alembic 디렉토리 생성)
-$ alembic init alembic
+# 1. migration 생성
+$ alembic revision --autogenerate -m "~~comment~~"
 
-# 2. alembic.ini 파일의 sqlalchemy.url을 변경
-    sqlalchemy.url = "postgresql://postgres:balbalm07@127.0.0.1/balbalm"
-
-# 3. alembic/env.py 수정
-    import models
-    target_metadata = models.Base.metadata
-
-# 4. migration 생성
-$ alembic revision --autogenerate -m "Create users and temp_users tables"
-
-# 5. migration 적용
+# 2. migration 적용
 $ alembic upgrade head
 ```
 
@@ -77,9 +69,3 @@ $ alembic upgrade head
    - PR = 1 커밋을 원칙으로 (pr 하나에 커밋이 여러 개면 리뷰가 힘들어요ㅜㅜ)
    - 사소한 내용일 경우 셀프 머지도 허용 
    - 머지 방식은 개인적으로 rebase merge를 선호합니다.
-
-### 개발을 위한 데이터베이스 접근
-``` bash
-# postgres // balbalm07
-ssh -i balbalm-aws.pem -L 5432:balbalm-db.ch6k662g0l8s.ap-northeast-2.rds.amazonaws.com:5432 ubuntu@ec2-52-78-173-191.ap-northeast-2.compute.amazonaws.com
-```
