@@ -5,9 +5,9 @@ from fastapi import HTTPException, Depends, APIRouter, Query
 from starlette.responses import JSONResponse, Response
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from schemas import DogBreed, Vaccination, Allergy
-from database import get_db
-from crud import (
+from ..schemas.onboarding import DogBreed, Vaccination, Allergy
+from ..database.db import get_db
+from ..services.onboarding import (
     create_dogbreed, delete_dogbreed_by_id,
     create_vaccination, delete_vaccination_by_id,
     create_allergy, delete_allergy_by_id

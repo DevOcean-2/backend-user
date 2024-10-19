@@ -3,7 +3,7 @@
 """
 from typing import List
 from fastapi import APIRouter
-from schemas import ProfileResp, ProfileTagUpdateReq, ProfileUpdateReq, VisitorProfileResp
+from ..schemas.profile import ProfileResp, ProfileTagUpdateReq, ProfileUpdateReq, VisitorProfileResp
 
 router = APIRouter(
     prefix="/profiles",

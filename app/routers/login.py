@@ -8,9 +8,9 @@ import httpx, os
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
 load_dotenv()
-from schemas import KaKaoUserInfo, TempUserCreate
-from database import get_db
-from crud import create_temp_user, get_user_by_social_id, create_jwt_token
+from ..schemas.login import KaKaoUserInfo, TempUserCreate
+from ..database.db import get_db
+from ..services.login import create_temp_user, get_user_by_social_id, create_jwt_token
 
 # 카카오 개발자 계정에서 얻은 정보로 설정
 KAKAO_CLIENT_ID = os.environ.get("KAKAO_CLIENT_ID")
