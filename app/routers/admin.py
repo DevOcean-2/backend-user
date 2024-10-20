@@ -5,9 +5,10 @@ from fastapi import HTTPException, Depends, APIRouter, Query
 from starlette.responses import JSONResponse, Response
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from ..schemas.onboarding import DogBreed, Vaccination, Allergy
+from ..schemas.onboarding import Disease, DogBreed, Vaccination, Allergy
 from ..database.db import get_db
 from ..services.onboarding import (
+    create_disease, delete_disease_by_id,
     create_dogbreed, delete_dogbreed_by_id,
     create_vaccination, delete_vaccination_by_id,
     create_allergy, delete_allergy_by_id
@@ -18,6 +19,21 @@ router = APIRouter(
     tags=["Admin"],
     responses={404: {"description": "Not found"}},
 )
+
+# 강아지 질병 등록
+@router.post("/disease", response_model=Disease)
+async def add_disease(name: str, db: Session=Depends(get_db)):
+    disease = create_disease(db, name)
+    return Disease(id=disease.id, name=disease.name)
+
+# 강아지 질병 삭제
+@router.delete("/disease/{disease_id}")
+async def delete_disease(disease_id: int, db: Session = Depends(get_db)):
+    result = delete_disease_by_id(db, disease_id)
+    if result:
+        return JSONResponse(content={"message": "Successfully Deleted"}, status_code=200)
+    else:
+        return JSONResponse(content={"message": "No such Disease"}, status_code=404)
 
 # 강아지 품종 등록
 @router.post("/dogbreed", response_model=DogBreed)

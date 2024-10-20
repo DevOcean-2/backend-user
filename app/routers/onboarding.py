@@ -6,9 +6,9 @@ from starlette.responses import JSONResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from ..database.db import get_db
-from ..schemas.login import UserCreate
+from ..schemas.login import UserCreate, UserProfileCreate
 from ..schemas.onboarding import DogBreed, Vaccination, Allergy
-from ..services.login import create_user, get_temp_user, delete_temp_user, create_jwt_token
+from ..services.login import create_user, get_temp_user, delete_temp_user, create_jwt_token, create_user_profile
 from ..services.onboarding import get_dogbreed_list, get_vaccination_list, get_allergy_list
 
 router = APIRouter(
@@ -19,7 +19,7 @@ router = APIRouter(
 
 # 새로 로그인 한 유저에 대해 회원가입 프로세스 진행
 @router.post("/signup")
-async def complete_signup(user_data: UserCreate, db: Session = Depends(get_db)):
+async def complete_signup(user_data: UserCreate, user_profile_data: UserProfileCreate, db: Session = Depends(get_db)):
     # 임시 사용자 정보 확인
     temp_user = get_temp_user(db, user_data.temp_user_id)
     if not temp_user:
@@ -31,12 +31,11 @@ async def complete_signup(user_data: UserCreate, db: Session = Depends(get_db)):
         temp_user_id = temp_user.id,
         social_id=temp_user.social_id,
         name=temp_user.name,
-
-        # 새로 입력 받은 필드 값들
-        # 추후 추가 예정
     )
+
     db_user = create_user(db, new_user)
-    
+    db_user_profile = create_user_profile(db, new_user, user_profile_data)
+
     # 임시 사용자 정보 삭제
     delete_temp_user(db, temp_user.id)
     
@@ -50,6 +49,9 @@ async def complete_signup(user_data: UserCreate, db: Session = Depends(get_db)):
         "access_token": jwt_token,
         "token_type": "bearer"
     })
+
+
+
 
 @router.get("/dogbreed", response_model=List[DogBreed])
 async def search_dogbreed(db: Session=Depends(get_db)):

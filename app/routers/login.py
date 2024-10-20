@@ -16,7 +16,6 @@ from ..services.login import create_temp_user, get_user_by_social_id, create_jwt
 KAKAO_CLIENT_ID = os.environ.get("KAKAO_CLIENT_ID")
 KAKAO_CLIENT_SECRET = os.environ.get("KAKAO_CLIENT_SECRET")
 KAKAO_REDIRECT_URI = os.environ.get("KAKAO_REDIRECT_URI", "http://localhost:8000/user/login/auth")
-
 oauth2_scheme = OAuth2AuthorizationCodeBearer(
     authorizationUrl="https://kauth.kakao.com/oauth/authorize",
     tokenUrl="https://kauth.kakao.com/oauth/token",
