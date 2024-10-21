@@ -78,6 +78,7 @@ async def kakao_callback(code: str, request: Request, db: Session = Depends(get_
         # 기존 사용자: 로그인 처리
         jwt_token = create_jwt_token({
             "sub": str(db_user.id),
+            "social_id": db_user.social_id
         })
         return JSONResponse(content={
             "message": "User logged in successfully",

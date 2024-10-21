@@ -42,6 +42,7 @@ async def complete_signup(user_data: UserCreate, user_profile_data: UserProfileC
     # JWT 토큰 생성
     jwt_token = create_jwt_token({
         "sub": str(db_user.id),
+        "social_id": db_user.social_id
     })
     
     return JSONResponse(content={
