@@ -1,8 +1,30 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from ..models.onboarding import DogBreeds, Vaccinations, Allergies 
+from ..models.onboarding import Disease, DogBreeds, Vaccinations, Allergies 
 from dotenv import load_dotenv
 load_dotenv()
+
+# 질병 리스트 반환
+def get_disease_list(db : Session):
+    diseases = db.query(Disease).all()
+    return diseases
+
+# 질병 등록
+def create_disease(db : Session, name : str):
+    disease = Disease(name=name)
+    db.add(disease)
+    db.commit()
+    db.refresh(disease)
+    return disease
+
+# 질병 ID로 삭제
+def delete_disease_by_id(db: Session, disease_id: int) -> bool:
+    disease = db.query(Disease).filter(Disease.id == disease_id).first()
+    if disease:
+        db.delete(disease)
+        db.commit()
+        return True
+    return False
 
 # 강아지 품종 리스트 반환
 def get_dogbreed_list(db : Session):
