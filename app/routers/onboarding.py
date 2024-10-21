@@ -18,8 +18,12 @@ router = APIRouter(
 )
 
 # 새로 로그인 한 유저에 대해 회원가입 프로세스 진행
-@router.post("/signup")
+@router.post("/signup", summary="Sign Up for New User")
 async def complete_signup(user_data: UserCreate, user_profile_data: UserProfileCreate, db: Session = Depends(get_db)):
+    """
+    Complete the sign-up process for a new user.
+    /user/login/auth API를 통해 받은 사용자 정보를 이용하여 회원가입을 완료
+    """
     # 임시 사용자 정보 확인
     temp_user = get_temp_user(db, user_data.temp_user_id)
     if not temp_user:
@@ -52,19 +56,26 @@ async def complete_signup(user_data: UserCreate, user_profile_data: UserProfileC
     })
 
 
-
-
-@router.get("/dogbreed", response_model=List[DogBreed])
+@router.get("/dogbreed", response_model=List[DogBreed], summary="Get DogBreed List")
 async def search_dogbreed(db: Session=Depends(get_db)):
-    breeds = get_dogbreed_list(db) # 품종 리스트 전체 반환
+    """
+    품종 전체를 리스트로 반환.
+    """
+    breeds = get_dogbreed_list(db)
     return breeds
 
-@router.get("/vaccination", response_model=List[Vaccination])
+@router.get("/vaccination", response_model=List[Vaccination], summary="Get Vaccination List")
 async def search_vaccination(db: Session=Depends(get_db)):
-    breeds = get_vaccination_list(db) # 백신 리스트 전체 반환
+    """
+    백신 전체를 리스트로 반환.
+    """
+    breeds = get_vaccination_list(db)
     return breeds
 
-@router.get("/allergy", response_model=List[Allergy])
+@router.get("/allergy", response_model=List[Allergy], summary="Get Allergy List")
 async def search_allergy(db: Session=Depends(get_db)):
-    breeds = get_allergy_list(db) # 알러지 리스트 전체 반환
+    """
+    알러지 전체를 리스트로 반환.
+    """
+    breeds = get_allergy_list(db)
     return breeds

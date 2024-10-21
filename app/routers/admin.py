@@ -20,60 +20,84 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-# 강아지 질병 등록
-@router.post("/disease", response_model=Disease)
+@router.post("/disease", response_model=Disease, summary="Add New Disease")
 async def add_disease(name: str, db: Session=Depends(get_db)):
+    """
+    강아지 질병 이름을 등록.
+    """
     disease = create_disease(db, name)
     return Disease(id=disease.id, name=disease.name)
 
-# 강아지 질병 삭제
-@router.delete("/disease/{disease_id}")
+@router.delete("/disease/{disease_id}", summary="Delete Disease")
 async def delete_disease(disease_id: int, db: Session = Depends(get_db)):
+    """
+    등록된 강아지 질병을 id로 삭제. \n
+    성공시 200, {"message": "Successfully Deleted"} \n
+    실패시 404, {"message": "No such Disease"}
+    """
     result = delete_disease_by_id(db, disease_id)
     if result:
         return JSONResponse(content={"message": "Successfully Deleted"}, status_code=200)
     else:
         return JSONResponse(content={"message": "No such Disease"}, status_code=404)
 
-# 강아지 품종 등록
-@router.post("/dogbreed", response_model=DogBreed)
+@router.post("/dogbreed", response_model=DogBreed, summary="Add New DogBreed")
 async def add_dogbreed(name: str, db: Session=Depends(get_db)):
+    """
+    강아지 품종을 등록.
+    """
     dog_breed = create_dogbreed(db, name)
     return DogBreed(id=dog_breed.id, name=dog_breed.name)
 
-# 강아지 품종 삭제
-@router.delete("/dogbreed/{dogbreed_id}")
+@router.delete("/dogbreed/{dogbreed_id}", summary="Delete DogBreed")
 async def delete_dogbreed(dogbreed_id: int, db: Session = Depends(get_db)):
+    """
+    강아지 품종을 id로 삭제. \n
+    성공시 200, {"message": "Successfully Deleted"} \n
+    실패시 404, {"message": "No such dogbreed"}
+    """
     result = delete_dogbreed_by_id(db, dogbreed_id)
     if result:
         return JSONResponse(content={"message": "Successfully Deleted"}, status_code=200)
     else:
         return JSONResponse(content={"message": "No such DogBreed"}, status_code=404)
 
-# 백신 등록
-@router.post("/vaccination", response_model=DogBreed)
+@router.post("/vaccination", response_model=DogBreed, summary="Add New Vaccination")
 async def add_vaccination(name: str, db: Session=Depends(get_db)):
+    """
+    강아지 백신을 등록.
+    """
     vaccination = create_vaccination(db, name)
     return Vaccination(id=vaccination.id, name=vaccination.name)
 
-# 백신 삭제
-@router.delete("/vaccination/{vaccination_id}")
+@router.delete("/vaccination/{vaccination_id}", summary="Delete Vaccination")
 async def delete_vaccination(vaccination_id: int, db: Session = Depends(get_db)):
+    """
+    강아지 백신을 id로 삭제. \n
+    성공시 200, {"message": "Successfully Deleted"} \n
+    실패시 404, {"message": "No such Vaccination"}
+    """
     result = delete_vaccination_by_id(db, vaccination_id)
     if result:
         return JSONResponse(content={"message": "Successfully Deleted"}, status_code=200)
     else:
         return JSONResponse(content={"message": "No such Vaccination"}, status_code=404)
 
-# 알러지 등록
-@router.post("/allergy", response_model=DogBreed)
+@router.post("/allergy", response_model=DogBreed, summary="Add New Allergy")
 async def add_allergy(name: str, db: Session=Depends(get_db)):
+    """
+    강아지 알러지를 등록.
+    """
     allergy = create_allergy(db, name)
     return Allergy(id=allergy.id, name=allergy.name)
 
-# 알러지 삭제
 @router.delete("/allergy/{allergy_id}")
 async def delete_allergy(allergy_id: int, db: Session = Depends(get_db)):
+    """
+    강아지 알러지를 id로 삭제. \n
+    성공시 200, {"message": "Successfully Deleted"} \n
+    실패시 404, {"message": "No such Allergy"}
+    """
     result = delete_allergy_by_id(db, allergy_id)
     if result:
         return JSONResponse(content={"message": "Successfully Deleted"}, status_code=200)
