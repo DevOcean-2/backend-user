@@ -17,7 +17,9 @@ app = FastAPI(
     description="backend for balbalm user service",
     version="1.0-beta",
     openapi_url="/openapi.json",
-    debug=True
+    debug=True,
+    docs_url="/docs",
+    redoc_url="/redoc"
 )
 
 app.logger = logger
@@ -62,11 +64,10 @@ admin_router = APIRouter(
     tags=["Admin"]
 )
 
-@user_router.get("", response_model=dict)
+@user_router.get("", response_model=dict, summary="User API List")
 async def get_user_apis():
     """
-    user 관련 모든 api 리스팅
-    :return:
+    USER 관련 모든 API 목록을 반환
     """
     return {
         "message": "Welcome to the Balbalm User API!",
@@ -86,6 +87,27 @@ async def get_user_apis():
 user_router.include_router(login.router)
 user_router.include_router(onboarding.router)
 user_router.include_router(profile.router)
+
+
+@admin_router.get("", response_model=dict, summary="Admin API List")
+async def get_admin_apis():
+    """
+    ADMIN 관련 모든 API 목록을 반환
+    """
+    return {
+        "message": "Welcome to the Balbalm Admin API!",
+        "endpoints": {
+            "POST /admin/disease": "Add New Disease",
+            "DELETE /admin/disease/{disease_id}": "Delete Disease by ID",
+            "POST /admin/dogbreed": "Add New DogBreed",
+            "DELETE /admin/dogbreed/{dogbreed_id}": "Delete DogBreed by ID",
+            "POST /admin/vaccination": "Add New Vaccination",
+            "DELETE /admin/vaccination/{vaccination_id}": "Delete Vaccination by ID",
+            "POST /admin/allergy": "Add New Allergy",
+            "DELETE /admin/allergy/{allergy_id}": "Delete Allergy by ID",
+        }
+    }
+
 admin_router.include_router(admin.router)
 
 # app 에 추가

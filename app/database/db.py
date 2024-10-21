@@ -17,7 +17,6 @@ if os.getenv("ENV") == "local-dev":
 
     current_dir = os.path.dirname(os.path.abspath(__file__))
     ssh_key = os.path.join(current_dir, os.getenv("SSH_KEY"))
-
     server = SSHTunnelForwarder(
         (ssh_host, 22),
         ssh_username=ssh_user,
