@@ -27,16 +27,23 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-# 사용자를 카카오 로그인 페이지로 redirect
-@router.get("")
+@router.get("", summary="Login with Kakao")
 async def login():
+    """
+    카카오 로그인을 위한 리다이렉트
+    """
     return RedirectResponse(
         f"https://kauth.kakao.com/oauth/authorize?client_id={KAKAO_CLIENT_ID}&redirect_uri={KAKAO_REDIRECT_URI}&response_type=code"
     )
 
 # 카카오로부터 받은 인증 코드를 사용하여 access token을 얻음
-@router.get("/auth")
+@router.get("/auth", summary="Kakao Login Authorization Callback")
 async def kakao_callback(code: str, request: Request, db: Session = Depends(get_db)):
+    """
+    OAuth2 인증 코드를 받아서 카카오 로그인 처리 \n
+    이미 가입된 사용자인지 확인하고, 새 사용자라면 임시 사용자 생성 후 회원가입 프로세스로 리다이렉트 \n
+    이미 가입된 사용자라면 로그인 처리 후 JWT 토큰 반환
+    """
     # 액세스 토큰 요청
     token_url = "https://kauth.kakao.com/oauth/token"
     data = {
@@ -87,7 +94,10 @@ async def kakao_callback(code: str, request: Request, db: Session = Depends(get_
         })
 
 # access token을 사용하여 사용자 정보를 가져옴 
-async def get_kakao_userinfo(token: str = Depends(oauth2_scheme)):
+async def get_kakao_userinfo(token: str = Depends(oauth2_scheme), summary="Get Kakao User Info"):
+    """
+    발급받은 카카오 액세스 토큰을 사용하여 사용자 정보를 가져옴.
+    """
     user_url = "https://kapi.kakao.com/v2/user/me"
     headers = {"Authorization": f"Bearer {token}"}
 
