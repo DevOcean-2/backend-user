@@ -2,8 +2,8 @@ import jwt, os
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from ..models.login import User, TempUser, UserProfile
-from ..schemas.login import UserCreate, TempUserCreate, UserProfileCreate
+from ..models.login import User, TempUser
+from ..schemas.login import UserCreate, TempUserCreate
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -37,26 +37,6 @@ def create_user(db: Session, user: UserCreate):
     db.commit()
     db.refresh(db_user)
     return db_user
-
-def create_user_profile(db: Session, user: UserCreate, profile: UserProfileCreate):
-    db_profile = UserProfile(
-        social_id=user.social_id,
-        dog_name=profile.dog_name,
-        dog_gender=profile.dog_gender,
-        dog_size=profile.dog_size,
-        dog_breed=profile.dog_breed,
-        dog_cuteness=profile.dog_cuteness,
-        photo_path=profile.photo_path,
-        brith_day=profile.brith_day,
-        current_weight=profile.current_weight,
-        past_weight=profile.past_weight,
-        health_history=profile.health_history,
-        vaccinations=profile.vaccinations
-    )
-    db.add(db_profile)
-    db.commit()
-    db.refresh(db_profile)
-    return db_profile
 
 def delete_temp_user(db: Session, temp_user_id: int):
     db_temp_user = db.query(TempUser).filter(TempUser.id == temp_user_id).first()

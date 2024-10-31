@@ -35,6 +35,9 @@ engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
+# 테이블 생성
+def create_tables():
+    Base.metadata.create_all(bind=engine)
 
 def get_db():
     db = SessionLocal()

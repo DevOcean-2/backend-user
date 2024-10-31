@@ -6,10 +6,12 @@ from starlette.responses import JSONResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from ..database.db import get_db
-from ..schemas.login import UserCreate, UserProfileCreate
+from ..schemas.login import UserCreate
+from ..schemas.profile import UserProfileCreate
 from ..schemas.onboarding import DogBreed, Vaccination, Allergy
-from ..services.login import create_user, get_temp_user, delete_temp_user, create_jwt_token, create_user_profile
+from ..services.login import create_user, get_temp_user, delete_temp_user, create_jwt_token
 from ..services.onboarding import get_dogbreed_list, get_vaccination_list, get_allergy_list
+from ..services.profile import create_user_profile
 
 router = APIRouter(
     prefix="/onboarding",

@@ -29,20 +29,6 @@ class UserCreate(BaseModel):
     social_id: str
     name : str
 
-class UserProfileCreate(BaseModel):
-    user_id: int
-    dog_name: str
-    dog_gender: int
-    dog_size: int
-    dog_breed: str
-    dog_cuteness: int
-    photo_path: str
-    brith_day: str
-    current_weight: int
-    past_weight: int
-    health_history: str
-    vaccinations: str
-
 class KaKaoUserInfo(BaseModel):
     id: str
     email: Optional[str] = None
