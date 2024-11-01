@@ -8,8 +8,12 @@ from starlette_context import context
 from starlette_context.middleware import ContextMiddleware
 from starlette.responses import Response
 from app.routers import login, onboarding, profile, admin
+from app.database.db import create_tables
 
 logger = logging.getLogger(__name__)
+
+# models에 맞춰 테이블 생성(이미 있는 테이블은 무시)
+create_tables()
 
 # fastAPI app 생성
 app = FastAPI(

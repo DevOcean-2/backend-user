@@ -1,5 +1,6 @@
 from sqlalchemy import Boolean, Column, Integer, String
 from ..database.db import Base
+from sqlalchemy.orm import relationship
 
 class User(Base):
     __tablename__ = "users"
@@ -10,6 +11,10 @@ class User(Base):
     social_id = Column(String, unique=True, index=True)
     is_active = Column(Boolean, default=True)
 
+    profile = relationship("UserProfile", back_populates="user", uselist=False)
+    profile_viewers = relationship("ProfileView", foreign_keys="ProfileView.owner_id", back_populates="owner", lazy="select") # 내 프로필을 본 사람들의 기록
+    viewed_profiles = relationship("ProfileView", foreign_keys="ProfileView.visitor_id", back_populates="visitor", lazy="select") # 내가 본 다른 사람들의 프로필 기록
+
 class TempUser(Base):
     __tablename__ = "temp_users"
 
@@ -17,21 +22,3 @@ class TempUser(Base):
     # email = Column(String, index=True)
     name = Column(String)
     social_id = Column(String, index=True)
-
-# User 상세 정보
-class UserProfile(Base):
-    __tablename__ = "users_profile"
-    id = Column(Integer, primary_key=True, index=True)
-    social_id = Column(String, index=True) # 로그인한 소셜 아이디
-    dog_name = Column(String) # 이름
-    dog_gender = Column(Integer) # 0: 수컷, 1: 암컷
-    dog_size = Column(Integer) # 0: 소형견, 1: 중형견, 2: 대형견
-    dog_breed = Column(String) # 품종
-    dog_cuteness = Column(Integer) # 귀여움 정도
-    photo_path = Column(String) # 사진 경로
-    brith_day = Column(String) # 생일
-    current_weight = Column(Integer) # 현재 몸무게
-    past_weight = Column(Integer) # 이전 몸무게
-    health_history = Column(String) # 질병 이력 (리스트로 받아서 ,로 분리)
-    vaccinations = Column(String) # 백신 이력 (리스트로 받아서 ,로 분리)
-    
