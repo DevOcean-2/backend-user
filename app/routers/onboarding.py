@@ -8,7 +8,7 @@ from typing import List, Optional
 from ..database.db import get_db
 from ..schemas.login import UserCreate
 from ..schemas.profile import UserProfileCreate
-from ..schemas.onboarding import DogBreed, Vaccination, Allergy
+from ..schemas.onboarding import Disease, DogBreed, Vaccination, Allergy
 from ..services.login import create_user, get_temp_user, delete_temp_user, create_jwt_token
 from ..services.onboarding import get_dogbreed_list, get_vaccination_list, get_allergy_list
 from ..services.profile import create_user_profile
@@ -65,6 +65,8 @@ async def search_dogbreed(db: Session=Depends(get_db)):
     """
     breeds = get_dogbreed_list(db)
     return breeds
+
+
 
 @router.get("/vaccination", response_model=List[Vaccination], summary="Get Vaccination List")
 async def search_vaccination(db: Session=Depends(get_db)):
