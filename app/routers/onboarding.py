@@ -8,9 +8,9 @@ from typing import List, Optional
 from ..database.db import get_db
 from ..schemas.login import UserCreate
 from ..schemas.profile import UserProfileCreate
-from ..schemas.onboarding import DogBreed, Vaccination, Allergy
+from ..schemas.onboarding import Disease, DogBreed, Vaccination, Allergy
 from ..services.login import create_user, get_temp_user, delete_temp_user, create_jwt_token
-from ..services.onboarding import get_dogbreed_list, get_vaccination_list, get_allergy_list
+from ..services.onboarding import get_disease_list, get_dogbreed_list, get_vaccination_list, get_allergy_list
 from ..services.profile import create_user_profile
 
 router = APIRouter(
@@ -66,18 +66,26 @@ async def search_dogbreed(db: Session=Depends(get_db)):
     breeds = get_dogbreed_list(db)
     return breeds
 
+@router.get("/disease", response_model=List[Disease], summary="Get Disease List")
+async def search_disease(db: Session=Depends(get_db)):
+    """
+    질병 전체를 리스트로 반환.
+    """
+    diseases = get_disease_list(db)
+    return diseases
+
 @router.get("/vaccination", response_model=List[Vaccination], summary="Get Vaccination List")
 async def search_vaccination(db: Session=Depends(get_db)):
     """
     백신 전체를 리스트로 반환.
     """
-    breeds = get_vaccination_list(db)
-    return breeds
+    vaccines = get_vaccination_list(db)
+    return vaccines
 
 @router.get("/allergy", response_model=List[Allergy], summary="Get Allergy List")
 async def search_allergy(db: Session=Depends(get_db)):
     """
     알러지 전체를 리스트로 반환.
     """
-    breeds = get_allergy_list(db)
-    return breeds
+    allergies = get_allergy_list(db)
+    return allergies

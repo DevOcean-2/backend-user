@@ -3,17 +3,28 @@ main.py
 """
 import logging
 import uuid
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, APIRouter
 from starlette_context import context
 from starlette_context.middleware import ContextMiddleware
 from starlette.responses import Response
 from app.routers import login, onboarding, profile, admin
-from app.database.db import create_tables
+from app.database.db import db_manager
 
 logger = logging.getLogger(__name__)
 
-# models에 맞춰 테이블 생성(이미 있는 테이블은 무시)
-create_tables()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    애플리케이션 라이프사이클 이벤트 처리
+    """
+    # startup
+    db_manager.init_db()
+    db_manager.create_tables()
+    yield
+    # shutdown
+    if hasattr(db_manager, 'server') and db_manager.server:
+        db_manager.server.stop()
 
 # fastAPI app 생성
 app = FastAPI(
@@ -23,7 +34,8 @@ app = FastAPI(
     openapi_url="/openapi.json",
     debug=True,
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    lifespan=lifespan
 )
 
 app.logger = logger
@@ -76,22 +88,26 @@ async def get_user_apis():
     return {
         "message": "Welcome to the Balbalm User API!",
         "endpoints": {
-            "GET /user/login" : "Kakao Social Login",
-            "GET /user/login/auth" : "Kakao Login Authorization",
-            "POST /user/onboarding/signup" : "Sign Up for New User",
-            "GET /user/onboarding/dogbreed" : "Search DogBreed with Query",
-            "POST /user/onboarding/dogbreed/add" : "Add New DogBreed",
-            "PUT /user/profile": "Update your profile",
-            "PUT /user/profile/tags": "Update your profile tags",
-            "GET /user/profile/{user_id}": "Get user profile by user ID",
-            "GET /user/profile/visitors": "Get your profile visitors",
+            "GET /user": "User API List",
+            "GET /user/login": "Kakao Social Login",
+            "GET /user/login/auth": "Kakao Login Authorization Callback",
+            "POST /user/onboarding/signup": "Sign Up for New User",
+            "GET /user/onboarding/dogbreed": "Get DogBreed List",
+            "GET /user/onboarding/Disease": "Get Disease List",
+            "GET /user/onboarding/vaccination": "Get Vaccination List",
+            "GET /user/onboarding/allergy": "Get Allergy List",
+            "GET /user/profiles/users": "Get Users List",
+            "GET /user/profiles": "Get Profiles",
+            "GET /user/profiles/{user_id}": "Get Profile",
+            "PATCH /user/profiles/{user_id}": "Update Profile",
+            "POST /user/profiles/visit": "Create Profile View",
+            "GET /user/profiles/visitors/{user_id}": "Get Visitors"
         }
     }
 
 user_router.include_router(login.router)
 user_router.include_router(onboarding.router)
 user_router.include_router(profile.router)
-
 
 @admin_router.get("", response_model=dict, summary="Admin API List")
 async def get_admin_apis():
