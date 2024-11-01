@@ -12,6 +12,8 @@ class User(Base):
     is_active = Column(Boolean, default=True)
 
     profile = relationship("UserProfile", back_populates="user", uselist=False)
+    profile_viewers = relationship("ProfileView", foreign_keys="ProfileView.owner_id", back_populates="owner", lazy="select") # 내 프로필을 본 사람들의 기록
+    viewed_profiles = relationship("ProfileView", foreign_keys="ProfileView.visitor_id", back_populates="visitor", lazy="select") # 내가 본 다른 사람들의 프로필 기록
 
 class TempUser(Base):
     __tablename__ = "temp_users"

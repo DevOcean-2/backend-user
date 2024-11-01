@@ -4,7 +4,8 @@ from sqlalchemy import func
 from dotenv import load_dotenv
 from ..schemas.profile import UserProfileCreate, UserProfileResponse, UserProfileUpdate
 from ..schemas.login import UserCreate
-from ..models.profile import UserProfile
+from ..schemas.profile import ProfileViewBase, ProfileViewer
+from ..models.profile import UserProfile, ProfileView
 from ..models.login import User
 from ..models.onboarding import DogBreeds
 from dateutil.relativedelta import relativedelta
@@ -35,6 +36,12 @@ def create_user_profile(db: Session, user: UserCreate, profile: UserProfileCreat
 def get_users(db:Session):
     users = db.query(User).all()
     return users
+
+def get_user_by_id(db:Session, user_id:int):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
 
 # 특정 ID의 사용자의 Profile을 반환
 def get_user_profile(db: Session, user_id: int):
@@ -95,3 +102,39 @@ def update_user_profile(db: Session, user_id: int, profile_update: UserProfileUp
     
     # 업데이트된 프로필 반환
     return get_user_profile(db, user_id) # 수정된 사항 확인할 수 있도록
+
+def create_view(db: Session, view:ProfileViewBase):
+    db_view = ProfileView(**view.dict())
+    db.add(db_view)
+    db.commit()
+    db.refresh(db_view)
+    return db_view
+
+def get_visitor_lists(db: Session, user_id : int):
+    results = (
+        db.query(
+            ProfileView.visitor_id,
+            User.name.label('visitor_name'),
+            # User.image.label('visitor_image'), # 나중에 유저 프로필 사진 등록시 같이 추가할 예정
+            ProfileView.viewed_at
+        )
+        .join(User, User.id == ProfileView.visitor_id)
+        .filter(ProfileView.owner_id == user_id)
+        .order_by( 
+            ProfileView.visitor_id,             # visitor_id로 그룹핑
+            ProfileView.viewed_at.desc()        # 같은 visitor_id 내에서 최신순 정렬
+        )
+        .distinct(ProfileView.visitor_id)       # visitor_id 별로 최신 조회 기록만 선택
+        .order_by(ProfileView.viewed_at.desc()) # 최종 결과를 다시 최신순 정렬
+        .all()
+    )
+
+    return [
+        ProfileViewer(
+            visitor_id=row.visitor_id,
+            visitor_name=row.visitor_name,
+            # visitor_image=row.visitor_image,
+            viewed_at=row.viewed_at
+        )
+        for row in results
+    ]

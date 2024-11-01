@@ -1,5 +1,6 @@
-from sqlalchemy import Boolean, Column, Integer, String, ForeignKey
+from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, DateTime
 from ..database.db import Base
+from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 
 # User 상세 정보
@@ -21,3 +22,14 @@ class UserProfile(Base):
 
     user = relationship("User", back_populates="profile")
     breed = relationship("DogBreeds", back_populates="profiles")
+
+class ProfileView(Base):
+    __tablename__ = "profile_views"
+    id = Column(Integer, primary_key=True, index=True)
+    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    visitor_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    viewed_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    # 같은 User 테이블을 여러 foreign key로 참조하므로 foreign_keys가 필수
+    owner = relationship("User", foreign_keys=[owner_id], back_populates="profile_viewers", lazy="joined")
+    visitor = relationship("User", foreign_keys=[visitor_id], back_populates="viewed_profiles", lazy="joined")

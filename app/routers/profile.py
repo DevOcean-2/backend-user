@@ -7,8 +7,8 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from ..database.db import get_db
 from ..schemas.login import User
-from ..schemas.profile import UserProfileResponse, UserProfileUpdate
-from ..services.profile import get_user_profile, update_user_profile, get_users
+from ..schemas.profile import UserProfileResponse, UserProfileUpdate, ProfileViewBase, ProfileViewer
+from ..services.profile import get_user_profile, update_user_profile, get_users, create_view, get_visitor_lists
 
 router = APIRouter(
     prefix="/profiles",
@@ -17,7 +17,7 @@ router = APIRouter(
 )
 
 @router.get("/users", response_model=List[User])
-async def get_users(db: Session = Depends(get_db)):
+async def get_users_list(db: Session = Depends(get_db)):
     """
     유저 리스트 API \n
     :return: List[user]
@@ -56,6 +56,26 @@ async def update_profile(user_id: int, profile_update: UserProfileUpdate, db: Se
     :return: user profile
     """
     return update_user_profile(db, user_id, profile_update)
+
+@router.post("/visit", response_model=ProfileViewBase)
+def create_profile_view(view: ProfileViewBase, db: Session = Depends(get_db)):
+    """
+    프로필 조회 기록 생성 API \n
+    :param 조회한 유저(visitor_id): \n
+    :param 프로필 주인(owner_id): \n
+    :return ProfileView object:
+    """
+    db_view = create_view(db, view)
+    return db_view
+
+@router.get("/visitors/{user_id}", response_model=List[ProfileViewer])
+def get_visitors(user_id: int, db: Session=Depends(get_db)):
+    """
+    <방문자 기록>용 특정 유저의 프로필 조회한 사람들 정보 반환 API \n
+    :param user_id: \n
+    :return List[User]
+    """
+    return get_visitor_lists(db, user_id)
 
 
 # @router.put("")
