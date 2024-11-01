@@ -88,22 +88,26 @@ async def get_user_apis():
     return {
         "message": "Welcome to the Balbalm User API!",
         "endpoints": {
-            "GET /user/login" : "Kakao Social Login",
-            "GET /user/login/auth" : "Kakao Login Authorization",
-            "POST /user/onboarding/signup" : "Sign Up for New User",
-            "GET /user/onboarding/dogbreed" : "Search DogBreed with Query",
-            "POST /user/onboarding/dogbreed/add" : "Add New DogBreed",
-            "PUT /user/profile": "Update your profile",
-            "PUT /user/profile/tags": "Update your profile tags",
-            "GET /user/profile/{user_id}": "Get user profile by user ID",
-            "GET /user/profile/visitors": "Get your profile visitors",
+            "GET /user": "User API List",
+            "GET /user/login": "Kakao Social Login",
+            "GET /user/login/auth": "Kakao Login Authorization Callback",
+            "POST /user/onboarding/signup": "Sign Up for New User",
+            "GET /user/onboarding/dogbreed": "Get DogBreed List",
+            "GET /user/onboarding/Disease": "Get Disease List",
+            "GET /user/onboarding/vaccination": "Get Vaccination List",
+            "GET /user/onboarding/allergy": "Get Allergy List",
+            "GET /user/profiles/users": "Get Users List",
+            "GET /user/profiles": "Get Profiles",
+            "GET /user/profiles/{user_id}": "Get Profile",
+            "PATCH /user/profiles/{user_id}": "Update Profile",
+            "POST /user/profiles/visit": "Create Profile View",
+            "GET /user/profiles/visitors/{user_id}": "Get Visitors"
         }
     }
 
 user_router.include_router(login.router)
 user_router.include_router(onboarding.router)
 user_router.include_router(profile.router)
-
 
 @admin_router.get("", response_model=dict, summary="Admin API List")
 async def get_admin_apis():
