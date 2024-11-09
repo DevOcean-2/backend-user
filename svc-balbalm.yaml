@@ -1,0 +1,57 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-northeast-2:147997130241:certificate/f5b45740-9ea0-4945-8529-a73eb2cb11eb
+    alb.ingress.kubernetes.io/group.name: balbalm-alb
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/load-balancer-name: balbalm-alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    alb.ingress.kubernetes.io/subnets: subnet-006adcaf7b8313e2b, subnet-0d0554fc3b0cae181
+    alb.ingress.kubernetes.io/target-type: ip
+  labels:
+    app: apim-balbalm
+  name: ing-balbalm
+  namespace: devocean
+spec:
+  ingressClassName: alb
+  rules:
+  - host: balbalm.yubin.dev
+    http:
+      paths:
+      - backend:
+          service:
+            name: svc-balbalm-user
+            port:
+              number: 8000
+        path: /user
+        pathType: Prefix
+      - backend:
+          service:
+            name: svc-balbalm-place
+            port:
+              number: 8000
+        path: /place
+        pathType: ImplementationSpecific
+      - backend:
+          service:
+            name: svc-balbalm-walk
+            port:
+              number: 8000
+        path: /walk
+        pathType: ImplementationSpecific
+      - backend:
+          service:
+            name: balbalm-feed
+            port:
+              number: 8000
+        path: /feed
+        pathType: Prefix
+      - backend:
+          service:
+            name: svc-balbalm-mission
+            port:
+              number: 8000
+        path: /mission
+        pathType: ImplementationSpecific

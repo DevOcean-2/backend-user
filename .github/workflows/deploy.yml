@@ -1,0 +1,72 @@
+name: Deploy to AWS EKS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      ECR_REGISTRY: ${{ vars.ECR_REGISTRY }}
+      IMAGE_NAME: ${{ vars.IMAGE_NAME }}
+
+    steps:
+      - name: Print Actor
+        run: echo "Started by ${{ github.actor }}"
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set Image Tag
+        run: |
+          CURRENT_DATE=$(date +"%Y%m%d")
+          echo "FULL_IMAGE_URL=${ECR_REGISTRY}/${IMAGE_NAME}:${CURRENT_DATE}" >> $GITHUB_ENV
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ env.FULL_IMAGE_URL }}
+          platforms: linux/amd64
+          build-args: |
+            KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}
+            KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }}
+            KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }}
+            JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
+
+      - name: Deploy to EKS
+        run: |
+          aws eks --region ${{ vars.AWS_REGION }} update-kubeconfig --name ${{ vars.EKS_CLUSTER_NAME }}
+          kubectl set image deployment/deploy-balbalm-user balbalm-user=${{ env.FULL_IMAGE_URL }} -n devocean
+          kubectl rollout restart deployment/deploy-balbalm-user -n devocean
