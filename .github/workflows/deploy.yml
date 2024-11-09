@@ -1,0 +1,68 @@
+name: Deploy to AWS EKS
+
+on:
+  push:
+    branches:
+      - containerizing
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      ECR_REGISTRY: 147997130241.dkr.ecr.ap-northeast-2.amazonaws.com
+      IMAGE_TAG: ${{ github.sha }}
+      AWS_REGION: ap-northeast-2
+
+    steps:
+      - name: Print Actor
+        run: echo "Started by ${{ github.actor }}"
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set Image Tag
+        run: |
+          echo "FULL_IMAGE_URL=${{ env.ECR_REGISTRY }}/${{ vars.IMAGE_NAME }}:${IMAGE_TAG}" >> $GITHUB_ENV
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ env.FULL_IMAGE_URL }}
+          platforms: linux/amd64
+
+      - name: Deploy to EKS
+        run: |
+          aws eks --region ${{ env.AWS_REGION }} update-kubeconfig --name ${{ vars.EKS_CLUSTER_NAME }}
+          kubectl apply -f yaml/deploy-balbalm-user.yaml
+          kubectl set image deployment/deploy-balbalm-user balbalm-user=${{ env.FULL_IMAGE_URL }} -n devocean
+          kubectl rollout restart deployment/deploy-balbalm-user -n devocean
