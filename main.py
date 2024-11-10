@@ -1,13 +1,12 @@
-"""
-main.py
-"""
 import logging
 import uuid
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, APIRouter
+from fastapi.openapi.docs import get_swagger_ui_html
+from fastapi.openapi.utils import get_openapi
 from starlette_context import context
 from starlette_context.middleware import ContextMiddleware
-from starlette.responses import Response
+from starlette.responses import Response, JSONResponse
 from app.routers import login, onboarding, profile, admin
 from app.database.db import db_manager
 
@@ -31,11 +30,9 @@ app = FastAPI(
     title="Balbalm User Backend",
     description="backend for balbalm user service",
     version="1.0-beta",
-    openapi_url="/openapi.json",
-    debug=True,
-    docs_url="/docs",
-    redoc_url="/redoc",
-    lifespan=lifespan
+    openapi_url=None,  # 기본 openapi.json 경로 비활성화
+    docs_url=None,     # 기본 /docs 경로 비활성화
+    redoc_url=None     # 기본 /redoc 경로 비활성화
 )
 
 app.logger = logger
@@ -70,11 +67,39 @@ async def http_log(request, call_next):
 
 app.add_middleware(ContextMiddleware)
 
+@app.get("/", tags=["Health Check"])
+async def health_check():
+    """
+    Health Check
+    """
+    return {"status": "ok"}
+
+# Custom OpenAPI JSON 엔드포인트
+@app.get("/user/openapi.json", include_in_schema=False)
+async def get_custom_openapi():
+    return JSONResponse(get_openapi(
+        title=app.title,
+        version=app.version,
+        description=app.description,
+        routes=app.routes
+    ))
+
+# Custom Swagger UI 엔드포인트
+@app.get("/user/docs", include_in_schema=False)
+async def custom_swagger_ui_html():
+    return get_swagger_ui_html(
+        openapi_url="/user/openapi.json",
+        title=f"{app.title} - Swagger UI",
+        oauth2_redirect_url=None,
+        init_oauth=None,
+    )
+
 # user prefix 추가
 user_router = APIRouter(
     prefix="/user",
     tags=["User"]
 )
+
 admin_router = APIRouter(
     prefix='/admin',
     tags=["Admin"]

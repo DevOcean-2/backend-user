@@ -11,7 +11,7 @@ metadata:
     alb.ingress.kubernetes.io/subnets: subnet-006adcaf7b8313e2b, subnet-0d0554fc3b0cae181
     alb.ingress.kubernetes.io/target-type: ip
   labels:
-    app: apim-balbalm
+    app: balbalm-user
   name: ing-balbalm
   namespace: devocean
 spec:
