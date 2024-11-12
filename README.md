@@ -34,21 +34,6 @@ backend-user/
    pip3 install -r requirements.txt
    ```
 
-3. 개발을 위한 DB 접근(database의 tunneling으로 생략해도 됨)
-``` bash
-# ID: postgres
-# Password: balbalm07
-$ ssh -i balbalm-aws.pem -L 5432:balbalm-db.ch6k662g0l8s.ap-northeast-2.rds.amazonaws.com:5432 ubuntu@ec2-52-78-173-191.ap-northeast-2.compute.amazonaws.com
-$ psql -h balbalm-db.ch6k662g0l8s.ap-northeast-2.rds.amazonaws.com -U postgres
-```
-3. DB Migration using Alembic
-```shell
-# 1. migration 생성
-$ alembic revision --autogenerate -m "~~comment~~"
-
-# 2. migration 적용
-$ alembic upgrade head
-```
 
 ## 개발
 1. 브랜치
