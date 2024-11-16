@@ -5,6 +5,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sshtunnel import SSHTunnelForwarder
 from sqlalchemy import create_engine
+from sqlalchemy_utils import database_exists, create_database
+
 load_dotenv()
 
 Base = declarative_base()
@@ -40,8 +42,13 @@ class DatabaseManager:
             except Exception as e:
                 print(f"Error establishing SSH tunnel: {e}")
                 raise e
-
+        
         self.engine = create_engine(DATABASE_URL)
+        if not database_exists(self.engine.url):
+            create_database(self.engine.url)
+            print("Database created!")
+        else:
+            print("Database already exists.")
         self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
         
     def cleanup(self):

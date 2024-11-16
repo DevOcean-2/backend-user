@@ -18,6 +18,7 @@ async def lifespan(app: FastAPI):
     애플리케이션 라이프사이클 이벤트 처리
     """
     # startup
+    print("App Starting up...")
     db_manager.init_db()
     db_manager.create_tables()
     yield
@@ -32,7 +33,8 @@ app = FastAPI(
     version="1.0-beta",
     openapi_url=None,  # 기본 openapi.json 경로 비활성화
     docs_url=None,     # 기본 /docs 경로 비활성화
-    redoc_url=None     # 기본 /redoc 경로 비활성화
+    redoc_url=None,     # 기본 /redoc 경로 비활성화
+    lifespan=lifespan
 )
 
 app.logger = logger
