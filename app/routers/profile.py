@@ -1,13 +1,13 @@
 """
 유저관리의 프로필 관련 API
 """
-from fastapi import HTTPException, Depends, APIRouter, Query
-from starlette.responses import JSONResponse
+from fastapi import Depends, APIRouter
+from fastapi_jwt_auth import AuthJWT
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List
 from ..database.db import get_db
 from ..schemas.login import User
-from ..schemas.profile import UserProfileResponse, UserProfileUpdate, ProfileViewBase, ProfileViewer
+from ..schemas.profile import UserProfileResponse, UserProfileUpdate, ProfileViewCreate, ProfileViewer
 from ..services.profile import get_user_profile, update_user_profile, get_users, create_view, get_visitor_lists
 
 router = APIRouter(
@@ -49,24 +49,26 @@ async def get_profile(user_id: int, db: Session = Depends(get_db)):
     return profile
 
 @router.patch("/{user_id}", response_model=UserProfileResponse)
-async def update_profile(user_id: int, profile_update: UserProfileUpdate, db: Session = Depends(get_db)):
+async def update_profile(user_id : int, profile_update: UserProfileUpdate, token: AuthJWT = Depends(), db: Session = Depends(get_db)):
     """
     프로필 정보 수정 API \n
     :param 업데이트할 필드의 값: \n
+    :param token: \n
     :return: user profile
     """
+    token.jwt_required()
     return update_user_profile(db, user_id, profile_update)
 
-@router.post("/visit", response_model=ProfileViewBase)
-def create_profile_view(view: ProfileViewBase, db: Session = Depends(get_db)):
+@router.post("/visit", response_model=ProfileViewCreate)
+def create_profile_view(view: ProfileViewCreate, db: Session = Depends(get_db)):
     """
     프로필 조회 기록 생성 API \n
     :param 조회한 유저(visitor_id): \n
     :param 프로필 주인(owner_id): \n
     :return ProfileView object:
     """
-    db_view = create_view(db, view)
-    return db_view
+    result = create_view(db, view)
+    return result
 
 @router.get("/visitors/{user_id}", response_model=List[ProfileViewer])
 def get_visitors(user_id: int, db: Session=Depends(get_db)):

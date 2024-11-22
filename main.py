@@ -9,6 +9,25 @@ from starlette_context.middleware import ContextMiddleware
 from starlette.responses import Response, JSONResponse
 from app.routers import login, onboarding, profile, admin
 from app.database.db import db_manager
+from fastapi_jwt_auth import AuthJWT
+from pydantic import BaseModel
+import os
+from datetime import timedelta
+
+class Settings(BaseModel):
+    """
+    AuthJWT config setting
+    """
+    authjwt_secret_key: str = os.getenv("JWT_SECRET_KEY", "test_token")
+    authjwt_access_token_expires: int = timedelta(days=1)       # access_token은 1일
+    authjwt_refresh_token_expires: int = timedelta(days=3)      # 3일
+
+@AuthJWT.load_config
+def get_config():
+    """
+    AuthJWT config
+    """
+    return Settings()
 
 logger = logging.getLogger(__name__)
 
