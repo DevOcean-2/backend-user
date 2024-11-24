@@ -35,8 +35,8 @@ class UserProfileResponse(BaseModel):
     past_weight: int
     weight_change: int = Field(..., description="체중 변화량")
     age: str = Field(..., example="1년 2개월")    
-    # health_history: List[str] = Field(..., description="질병 이력 목록")
-    # vaccinations: List[str] = Field(..., description="백신 접종 이력 목록")
+    health_history: List[str] = Field(..., description="질병 이력 목록")
+    vaccinations: List[str] = Field(..., description="백신 접종 이력 목록")
     
     class Config:
         from_attributes = True
@@ -68,19 +68,15 @@ class UserProfileAbstract(BaseModel):
     # 방문자 리스트 -> 방문자 수
     # 한 줄 소개
 
-class ProfileViewBase(BaseModel):
+class ProfileViewCreate(BaseModel):
     owner_id: int
     visitor_id: int
-    viewed_at: datetime
-
-    class Config:
-        from_attributes = True
 
 # <방문자 기록> 화면에서 보여줄 내용들
 class ProfileViewer(BaseModel):
     visitor_id: int     # 방문자 고유 ID -> 이를 통해 해당 방문자의 프로필(피드)로 이동할 수 있도록
     visitor_name: str   # 방문자 이름
-    # visitor_image : None # 방문자의 프로필 이미지
+    visitor_image : str # 방문자의 프로필 이미지
     viewed_at : datetime # 정렬을 위해?
 
 

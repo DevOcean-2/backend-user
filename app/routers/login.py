@@ -3,6 +3,7 @@
 """
 from fastapi import HTTPException, Depends, APIRouter, Request
 from fastapi.security import OAuth2AuthorizationCodeBearer
+from fastapi_jwt_auth import AuthJWT
 from starlette.responses import RedirectResponse, JSONResponse
 import httpx, os
 from sqlalchemy.orm import Session
@@ -38,7 +39,7 @@ async def login():
 
 # 카카오로부터 받은 인증 코드를 사용하여 access token을 얻음
 @router.get("/auth", summary="Kakao Login Authorization Callback")
-async def kakao_callback(code: str, request: Request, db: Session = Depends(get_db)):
+async def kakao_callback(code: str, request: Request, Authorize: AuthJWT = Depends(), db: Session = Depends(get_db)):
     """
     OAuth2 인증 코드를 받아서 카카오 로그인 처리 \n
     이미 가입된 사용자인지 확인하고, 새 사용자라면 임시 사용자 생성 후 회원가입 프로세스로 리다이렉트 \n
@@ -82,14 +83,26 @@ async def kakao_callback(code: str, request: Request, db: Session = Depends(get_
             "redirect_to": "/signup"
         })
     else:
-        # 기존 사용자: 로그인 처리
-        jwt_token = create_jwt_token({
-            "sub": str(db_user.id),
-            "social_id": db_user.social_id
-        })
+        # 기존 사용자: 로그인 처리 (AuthJWT 사용)
+        # Access Token 생성
+        access_token = Authorize.create_access_token(
+            subject=str(db_user.id),
+            user_claims={
+                "social_id": db_user.social_id
+            }
+        )
+        # Refresh Token 생성
+        refresh_token = Authorize.create_refresh_token(
+            subject=str(db_user.id),
+            user_claims={
+                "social_id": db_user.social_id
+            }
+        )
+        
         return JSONResponse(content={
             "message": "User logged in successfully",
-            "access_token": jwt_token,
+            "access_token": access_token,
+            "refresh_token": refresh_token,
             "token_type": "bearer"
         })
 

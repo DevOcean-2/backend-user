@@ -2,6 +2,7 @@
 유저관리의 온보딩 관련 API
 """
 from fastapi import HTTPException, Depends, APIRouter, Query
+from fastapi_jwt_auth import AuthJWT
 from starlette.responses import JSONResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional
@@ -21,7 +22,7 @@ router = APIRouter(
 
 # 새로 로그인 한 유저에 대해 회원가입 프로세스 진행
 @router.post("/signup", summary="Sign Up for New User")
-async def complete_signup(user_data: UserCreate, user_profile_data: UserProfileCreate, db: Session = Depends(get_db)):
+async def complete_signup(user_data: UserCreate, user_profile_data: UserProfileCreate, Authorize: AuthJWT = Depends(), db: Session = Depends(get_db)):
     """
     Complete the sign-up process for a new user.
     /user/login/auth API를 통해 받은 사용자 정보를 이용하여 회원가입을 완료
@@ -45,15 +46,24 @@ async def complete_signup(user_data: UserCreate, user_profile_data: UserProfileC
     # 임시 사용자 정보 삭제
     delete_temp_user(db, temp_user.id)
     
-    # JWT 토큰 생성
-    jwt_token = create_jwt_token({
-        "sub": str(db_user.id),
-        "social_id": db_user.social_id
-    })
+    access_token = Authorize.create_access_token(
+        subject=str(db_user.id),
+        user_claims={
+            "social_id": db_user.social_id
+        }
+    )
+    # Refresh Token 생성
+    refresh_token = Authorize.create_refresh_token(
+        subject=str(db_user.id),
+        user_claims={
+            "social_id": db_user.social_id
+        }
+    )
     
     return JSONResponse(content={
-        "message": "User registered successfully",
-        "access_token": jwt_token,
+        "message": "User logged in successfully",
+        "access_token": access_token,
+        "refresh_token": refresh_token,
         "token_type": "bearer"
     })
 
