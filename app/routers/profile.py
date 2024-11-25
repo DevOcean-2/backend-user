@@ -32,24 +32,24 @@ async def get_profiles(db: Session = Depends(get_db)):
     :return: List[user profile]
     """
     users = get_users(db)
-    user_ids = [user.id for user in users]
+    user_ids = [user.social_id for user in users]
     data = []
     for user_id in user_ids:
         data.append(get_user_profile(db, user_id))
     return data
 
 @router.get("/{user_id}", response_model=UserProfileResponse)
-async def get_profile(user_id: int, db: Session = Depends(get_db)):
+async def get_profile(user_id: str, db: Session = Depends(get_db)):
     """
     특정 유저 프로필 정보 조회 API \n
-    :param user_id: \n
+    :param user_id(social_id): \n
     :return: user profile
     """
     profile = get_user_profile(db, user_id)
     return profile
 
 @router.patch("/{user_id}", response_model=UserProfileResponse)
-async def update_profile(user_id : int, profile_update: UserProfileUpdate, token: AuthJWT = Depends(), db: Session = Depends(get_db)):
+async def update_profile(user_id : str, profile_update: UserProfileUpdate, token: AuthJWT = Depends(), db: Session = Depends(get_db)):
     """
     프로필 정보 수정 API \n
     :param 업데이트할 필드의 값: \n
@@ -63,18 +63,18 @@ async def update_profile(user_id : int, profile_update: UserProfileUpdate, token
 def create_profile_view(view: ProfileViewCreate, db: Session = Depends(get_db)):
     """
     프로필 조회 기록 생성 API \n
-    :param 조회한 유저(visitor_id): \n
-    :param 프로필 주인(owner_id): \n
+    :param 조회한 유저(visitor's social_id): \n
+    :param 프로필 주인(owner's social_id): \n
     :return ProfileView object:
     """
     result = create_view(db, view)
     return result
 
 @router.get("/visitors/{user_id}", response_model=List[ProfileViewer])
-def get_visitors(user_id: int, db: Session=Depends(get_db)):
+def get_visitors(user_id: str, db: Session=Depends(get_db)):
     """
     <방문자 기록>용 특정 유저의 프로필 조회한 사람들 정보 반환 API \n
-    :param user_id: \n
+    :param user_id(owner's social_id): \n
     :return List[User]
     """
     return get_visitor_lists(db, user_id)

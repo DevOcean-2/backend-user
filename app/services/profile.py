@@ -59,15 +59,15 @@ def get_users(db:Session):
         )
     return data
 
-def get_user_by_id(db:Session, user_id:int):
-    user = db.query(User).filter(User.id == user_id).first()
+def get_user_by_id(db:Session, user_id:str):
+    user = db.query(User).filter(User.social_id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
 # 특정 ID의 사용자의 Profile을 반환
-def get_user_profile(db: Session, user_id: int):
-    user = db.query(User).filter(User.id == user_id).first() # user_id로 User 객체 찾아서 social_id, name 추출
+def get_user_profile(db: Session, user_id: str):
+    user = db.query(User).filter(User.social_id == user_id).first() # user_id로 User 객체 찾아서 social_id, name 추출
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     profile = db.query(UserProfile).filter(UserProfile.social_id == user.social_id).first() # social_id로 UserProfile 객체 찾기
@@ -83,6 +83,7 @@ def get_user_profile(db: Session, user_id: int):
     
     size_map = {0: "소형견", 1: "중형견", 2: "대형견"}
     profile_response = UserProfileResponse(
+        social_id=profile.social_id,
         user_name=user.name,
         dog_name=profile.dog_name,
         dog_gender="남자아이" if profile.dog_gender == 0 else "여자아이",
@@ -102,13 +103,8 @@ def get_user_profile(db: Session, user_id: int):
     return profile_response
 
 # 특정 사용자의 프로필 수정(일부 수정 가능)
-def update_user_profile(db: Session, user_id: int, profile_update: UserProfileUpdate):
-    # 기존 프로필 조회
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    profile = db.query(UserProfile).filter(UserProfile.social_id == user.social_id).first()
+def update_user_profile(db: Session, user_id: str, profile_update: UserProfileUpdate):
+    profile = db.query(UserProfile).filter(UserProfile.social_id == user_id).first()
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found")
     
@@ -137,16 +133,15 @@ def create_view(db: Session, view:ProfileViewCreate):
 
     return view
 
-def get_visitor_lists(db: Session, user_id: int):
+def get_visitor_lists(db: Session, user_id: str):
     results = (
         db.query(
             ProfileView.visitor_id,
-            User.name.label('visitor_name'),
-            UserProfile.photo_path.label('visitor_image'),  # UserProfile의 photo_path 사용
+            UserProfile.dog_name.label('visitor_name'),     # 닉네임
+            UserProfile.photo_path.label('visitor_image'),  # 피드홈의 프로필 이미지
             ProfileView.viewed_at
         )
-        .join(User, User.id == ProfileView.visitor_id)
-        .join(UserProfile, User.social_id == UserProfile.social_id)  # UserProfile 조인 추가
+        .join(UserProfile, ProfileView.visitor_id == UserProfile.social_id)  # UserProfile 조인 추가
         .filter(ProfileView.owner_id == user_id)
         .order_by( 
             ProfileView.visitor_id,            
