@@ -23,6 +23,7 @@ class UserProfileCreate(BaseModel):
         from_attributes = True
 
 class UserProfileResponse(BaseModel):
+    social_id: str = Field(..., description="Kakao's Unique Social ID")         # user의 카카오 social_id
     user_name: str = Field(..., description="Kakao's Profile Name")
     dog_name: str
     dog_gender: str = Field(..., description="남자아이/여자아이")
@@ -69,12 +70,12 @@ class UserProfileAbstract(BaseModel):
     # 한 줄 소개
 
 class ProfileViewCreate(BaseModel):
-    owner_id: int
-    visitor_id: int
+    owner_id: str # social_id
+    visitor_id: str # social_id
 
 # <방문자 기록> 화면에서 보여줄 내용들
 class ProfileViewer(BaseModel):
-    visitor_id: int     # 방문자 고유 ID -> 이를 통해 해당 방문자의 프로필(피드)로 이동할 수 있도록
+    visitor_id: str     # 방문자 social_id
     visitor_name: str   # 방문자 이름
     visitor_image : str # 방문자의 프로필 이미지
     viewed_at : datetime # 정렬을 위해?

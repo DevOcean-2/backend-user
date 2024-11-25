@@ -19,8 +19,8 @@ class Settings(BaseModel):
     AuthJWT config setting
     """
     authjwt_secret_key: str = os.getenv("JWT_SECRET_KEY", "test_token")
-    authjwt_access_token_expires: int = timedelta(days=1)       # access_token은 1일
-    authjwt_refresh_token_expires: int = timedelta(days=3)      # 3일
+    authjwt_access_token_expires: int = timedelta(days=7)       # 개발을 위해 7일로 늘림
+    authjwt_refresh_token_expires: int = timedelta(days=7)      # 3일
 
 @AuthJWT.load_config
 def get_config():

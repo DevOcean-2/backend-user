@@ -49,6 +49,12 @@ class DatabaseManager:
             print("Database created!")
         else:
             print("Database already exists.")
+            # table = self.Base.metadata.tables.get("profile_views")
+            # if table is not None:
+            #     table.drop(self.engine)
+            #     # 테이블 다시 생성
+            #     table.create(self.engine)
+            #     print("Recreate!")
         self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
         
     def cleanup(self):

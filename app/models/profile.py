@@ -26,8 +26,8 @@ class UserProfile(Base):
 class ProfileView(Base):
     __tablename__ = "profile_views"
     id = Column(Integer, primary_key=True, index=True)
-    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    visitor_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    owner_id = Column(String, ForeignKey("users.social_id"), nullable=False)
+    visitor_id = Column(String, ForeignKey("users.social_id"), nullable=False)
     viewed_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     # 같은 User 테이블을 여러 foreign key로 참조하므로 foreign_keys가 필수
