@@ -19,6 +19,7 @@ class UserProfile(Base):
     past_weight = Column(Integer) # 이전 몸무게
     health_history = Column(String) # 질병 이력 (리스트로 받아서 ,로 분리)
     vaccinations = Column(String) # 백신 이력 (리스트로 받아서 ,로 분리)
+    allergies = Column(String) # 알러지 (리스트로 받아서 ,로 분리)
 
     user = relationship("User", back_populates="profile")
     breed = relationship("DogBreeds", back_populates="profiles")

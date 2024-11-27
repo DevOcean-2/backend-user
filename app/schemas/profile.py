@@ -18,6 +18,7 @@ class UserProfileCreate(BaseModel):
     dog_breed: int          # 품종(DogBreed)의 ID
     health_history: str     # 질병 이력 (리스트로 받아서 ,로 분리)
     vaccinations: str       # 백신 이력 (리스트로 받아서 ,로 분리)
+    allergies: str          # 알러지 (리스트로 받아서 ,로 분리)
 
     class Config:
         from_attributes = True
@@ -38,7 +39,8 @@ class UserProfileResponse(BaseModel):
     age: str = Field(..., example="1년 2개월")    
     health_history: List[str] = Field(..., description="질병 이력 목록")
     vaccinations: List[str] = Field(..., description="백신 접종 이력 목록")
-    
+    allergies: List[str] = Field(..., description="알러지 목록")
+
     class Config:
         from_attributes = True
 
@@ -54,6 +56,7 @@ class UserProfileUpdate(BaseModel):
     dog_breed: Optional[int] = None  # 품종 ID
     health_history: Optional[str] = None
     vaccinations: Optional[str] = None
+    allergies: Optional[str] = None
 
     class Config:
         from_attributes = True

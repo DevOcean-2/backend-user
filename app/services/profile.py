@@ -33,7 +33,8 @@ def create_user_profile(db: Session, user: UserCreate, profile: UserProfileCreat
             current_weight=profile.current_weight,
             past_weight=profile.past_weight,
             health_history=profile.health_history,
-            vaccinations=profile.vaccinations
+            vaccinations=profile.vaccinations,
+            allergies=profile.allergies
         )
         db.add(db_profile)
         db.commit()
@@ -97,7 +98,8 @@ def get_user_profile(db: Session, user_id: str):
         weight_change=profile.current_weight-profile.past_weight,
         age=f"{diff.months}개월" if diff.years == 0 else f"{diff.years}년 {diff.months}개월",
         health_history= [x.strip() for x in profile.health_history.split(',')],
-        vaccinations=[x.strip() for x in profile.vaccinations.split(',')]
+        vaccinations=[x.strip() for x in profile.vaccinations.split(',')],
+        allergies=[x.strip() for x in profile.allergies.split(',')]
     )
 
     return profile_response
