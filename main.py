@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, APIRouter
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
+from ddtrace import patch_all
 from starlette_context import context
 from starlette_context.middleware import ContextMiddleware
 from starlette.responses import Response, JSONResponse
@@ -13,6 +14,9 @@ from fastapi_jwt_auth import AuthJWT
 from pydantic import BaseModel
 import os
 from datetime import timedelta
+
+# Datadog 트레이싱 초기화 
+patch_all()
 
 class Settings(BaseModel):
     """
@@ -57,6 +61,7 @@ app = FastAPI(
 )
 
 app.logger = logger
+logger = logging.getLogger(__name__)
 
 @app.middleware("http")
 async def http_log(request, call_next):
