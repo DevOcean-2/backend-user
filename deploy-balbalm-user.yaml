@@ -3,6 +3,10 @@ kind: Deployment
 metadata:
   name: deploy-balbalm-user
   namespace: devocean
+  labels:
+    tags.datadoghq.com/env: prod
+    tags.datadoghq.com/service: balbalm-user
+    tags.datadoghq.com/version: 1.0.0
 spec:
   progressDeadlineSeconds: 600
   replicas: 1
@@ -20,6 +24,14 @@ spec:
       creationTimestamp: null
       labels:
         app: balbalm-user
+        tags.datadoghq.com/env: prod
+        tags.datadoghq.com/service: balbalm-user
+        tags.datadoghq.com/version: 1.0.0
+        admission.datadoghq.com/enabled: "true"
+      annotations:
+          ad.datadoghq.com/balbalm-user.logs: '[{"source": "balbalm-python", "service":
+            "balbalm-user"}]'
+          admission.datadoghq.com/python-lib.version: v2.17.2
     spec:
       containers:
       - env:
